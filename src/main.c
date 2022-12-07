@@ -20,9 +20,11 @@
 #define OUT_FILE "out.flac"
 #define ENCODER_FILE ""
 
+#define CHAN_CNT 2
+
 static unsigned total_samples = 0; /* can use a 32-bit number due to WAVE size limitations */
-static FLAC__byte buffer[READSIZE/*samples*/ * 2/*bytes_per_sample*/ * 2/*channels*/]; /* we read the WAVE data into here */
-static FLAC__int32 pcm[READSIZE/*samples*/ * 2/*channels*/];
+static FLAC__byte buffer[READSIZE/*samples*/ * 2/*bytes_per_sample*/ * CHAN_CNT/*channels*/]; /* we read the WAVE data into here */
+static FLAC__int32 pcm[READSIZE/*samples*/ * CHAN_CNT/*channels*/];
 
 static void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_written, FLAC__uint64 samples_written, unsigned frames_written, unsigned total_frames_estimate, void *client_data);
 
@@ -37,10 +39,11 @@ int main(int argc, char *argv[])
 #endif
 	FILE *fin;
 	unsigned sample_rate = 0;
-	unsigned channels = 0;
+	unsigned channels = CHAN_CNT;
 	unsigned bps = 0;
 
 	printf("Start\n");
+	printf("size of FLAC__StreamEncoder: %d\n", sizeof(FLAC__StreamEncoder));
 
 #if 1
 	if((fin = fopen(IN_FILE, "rb")) == NULL) {
@@ -63,9 +66,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	sample_rate = 16000; //((((((unsigned)buffer[27] << 8) | buffer[26]) << 8) | buffer[25]) << 8) | buffer[24];
-	channels = 2;
 	bps = 16;
-	total_samples = 5*16*2*16000;//(((((((unsigned)buffer[43] << 8) | buffer[42]) << 8) | buffer[41]) << 8) | buffer[40]) / 4;
+	total_samples = 5*16*channels*16000;//(((((((unsigned)buffer[43] << 8) | buffer[42]) << 8) | buffer[41]) << 8) | buffer[40]) / 4;
 
 	/* allocate the encoder */
 	if((encoder = FLAC__stream_encoder_new()) == NULL) {
@@ -107,6 +109,16 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+#if 0
+	for(int i=1; i<512; i++) {
+		int* ptr = malloc(1000);
+		printf("%d 0x%x\n", i, ptr);
+		if(ptr == NULL) {
+			break;
+		}
+	}
+#endif
+
 	printf("Checkpoint %d\n",__LINE__);
 #if 1
 	/* initialize encoder */
@@ -115,6 +127,16 @@ int main(int argc, char *argv[])
 		if(init_status != FLAC__STREAM_ENCODER_INIT_STATUS_OK) {
 			printf("ERROR: initializing encoder: %s\n", FLAC__StreamEncoderInitStatusString[init_status]);
 			ok = false;
+		}
+	}
+#endif
+
+#if 0
+	for(int i=1; i<512; i++) {
+		int* ptr = malloc(1000);
+		printf("%d 0x%x\n", i, ptr);
+		if(ptr == NULL) {
+			break;
 		}
 	}
 #endif

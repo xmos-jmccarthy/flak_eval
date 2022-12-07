@@ -20,6 +20,8 @@
 /* define to align allocated memory on 32-byte boundaries */
 #define FLAC__ALIGN_MALLOC_DATA 1
 
+#define PROGMEM 
+
 /* define if building for ia32/i386 */
 /* #undef FLAC__CPU_IA32 */
 
