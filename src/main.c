@@ -8,12 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <xcore/hwtimer.h>
+
 #include "share/compat.h"
 #include "FLAC/metadata.h"
 #include "FLAC/stream_encoder.h"
 #include "FLAC/stream_decoder.h"
 
-#define READSIZE 1024
+#define READSIZE 240
 #define IN_FILE	 "test_in.wav"
 #define OUT_FILE "out.flac"
 #define ENCODER_FILE ""
@@ -29,8 +31,10 @@ int main(int argc, char *argv[])
 	FLAC__bool ok = true;
 	FLAC__StreamEncoder *encoder = 0;
 	FLAC__StreamEncoderInitStatus init_status;
+#if 0
 	FLAC__StreamMetadata *metadata[2];
 	FLAC__StreamMetadata_VorbisComment_Entry entry;
+#endif
 	FILE *fin;
 	unsigned sample_rate = 0;
 	unsigned channels = 0;
@@ -50,7 +54,7 @@ int main(int argc, char *argv[])
 	/* read wav header and validate it */
 	if(
 		fread(buffer, 1, 44, fin) != 44 ||
-		memcmp(buffer, "RIFF", 4) /* || */
+		memcmp(buffer, "RIFF", 4) //|| 
 		// memcmp(buffer+8, "WAVEfmt \020\000\000\000\001\000\002\000", 16) ||
 		// memcmp(buffer+32, "\004\000\020\000data", 8)
 	) {
@@ -58,10 +62,10 @@ int main(int argc, char *argv[])
 		fclose(fin);
 		return 1;
 	}
-	sample_rate = ((((((unsigned)buffer[27] << 8) | buffer[26]) << 8) | buffer[25]) << 8) | buffer[24];
+	sample_rate = 16000; //((((((unsigned)buffer[27] << 8) | buffer[26]) << 8) | buffer[25]) << 8) | buffer[24];
 	channels = 2;
 	bps = 16;
-	total_samples = (((((((unsigned)buffer[43] << 8) | buffer[42]) << 8) | buffer[41]) << 8) | buffer[40]) / 4;
+	total_samples = 5*16*2*16000;//(((((((unsigned)buffer[43] << 8) | buffer[42]) << 8) | buffer[41]) << 8) | buffer[40]) / 4;
 
 	/* allocate the encoder */
 	if((encoder = FLAC__stream_encoder_new()) == NULL) {
@@ -73,7 +77,7 @@ int main(int argc, char *argv[])
 
 	printf("Checkpoint %d\n",__LINE__);
 #if 1
-	ok &= FLAC__stream_encoder_set_verify(encoder, true);
+	ok &= FLAC__stream_encoder_set_verify(encoder, false);
 	ok &= FLAC__stream_encoder_set_compression_level(encoder, 5);
 	ok &= FLAC__stream_encoder_set_channels(encoder, channels);
 	ok &= FLAC__stream_encoder_set_bits_per_sample(encoder, bps);
@@ -134,21 +138,22 @@ int main(int argc, char *argv[])
 					pcm[i] = (FLAC__int32)(((FLAC__int16)(FLAC__int8)buffer[2*i+1] << 8) | (FLAC__int16)buffer[2*i]);
 				}
 				/* feed samples to encoder */
+				uint32_t start = get_reference_time();
 				ok = FLAC__stream_encoder_process_interleaved(encoder, pcm, need);
+				uint32_t end = get_reference_time();
+				printf("diff: %lu start: %lu end: %lu\n", end-start, start, end);
 			}
 			left -= need;
-			printf("iter\n");
 		}
 	}
+	printf("   state: %s\n", FLAC__StreamEncoderStateString[FLAC__stream_encoder_get_state(encoder)]);
 
 	ok &= FLAC__stream_encoder_finish(encoder);
 
 	printf("encoding: %s\n", ok? "succeeded" : "FAILED");
 	printf("   state: %s\n", FLAC__StreamEncoderStateString[FLAC__stream_encoder_get_state(encoder)]);
-	
+
 	printf("   FLAC__stream_encoder_get_verify_decoder_state: %s\n", FLAC__StreamDecoderStateString[FLAC__stream_encoder_get_verify_decoder_state(encoder)]);
-
-
 #endif
 
 	printf("Checkpoint %d\n",__LINE__);
@@ -172,5 +177,5 @@ void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_wr
 {
 	(void)encoder, (void)client_data;
 
-	printf("wrote %lu bytes, %lu /%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
+	printf("wrote %llu bytes, %llu /%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
 }
