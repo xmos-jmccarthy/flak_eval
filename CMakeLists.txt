@@ -13,6 +13,8 @@ enable_language(CXX C ASM)
 
 ## Add frameworks
 add_subdirectory(libFLAC)
+add_subdirectory(libFLAC_bgets)
+add_subdirectory(bget)
 
 #**********************
 # Gather Sources
@@ -26,7 +28,7 @@ set(APP_INCLUDES
 # Flags
 #**********************
 set(APP_COMPILER_FLAGS
-    -Os
+    -O0
     -g
     -report
     -fxscope
@@ -46,7 +48,7 @@ set(APP_LINK_OPTIONS
 )
 
 set(APP_COMMON_LINK_LIBRARIES
-    libFLAC
+    libbget
 )
 
 add_executable(flak_eval EXCLUDE_FROM_ALL)
@@ -54,5 +56,13 @@ target_sources(flak_eval PUBLIC ${APP_SOURCES})
 target_include_directories(flak_eval PUBLIC ${APP_INCLUDES})
 target_compile_definitions(flak_eval PUBLIC ${APP_COMPILE_DEFINITIONS} THIS_XCORE_TILE=0)
 target_compile_options(flak_eval PRIVATE ${APP_COMPILER_FLAGS})
-target_link_libraries(flak_eval PUBLIC ${APP_COMMON_LINK_LIBRARIES})
+target_link_libraries(flak_eval PUBLIC libFLAC ${APP_COMMON_LINK_LIBRARIES})
 target_link_options(flak_eval PRIVATE ${APP_LINK_OPTIONS})
+
+add_executable(flak_eval_ddr EXCLUDE_FROM_ALL)
+target_sources(flak_eval_ddr PUBLIC ${APP_SOURCES})
+target_include_directories(flak_eval_ddr PUBLIC ${APP_INCLUDES})
+target_compile_definitions(flak_eval_ddr PUBLIC USE_BGETS=1 ${APP_COMPILE_DEFINITIONS} THIS_XCORE_TILE=0)
+target_compile_options(flak_eval_ddr PRIVATE ${APP_COMPILER_FLAGS})
+target_link_libraries(flak_eval_ddr PUBLIC libFLAC_bgets ${APP_COMMON_LINK_LIBRARIES})
+target_link_options(flak_eval_ddr PRIVATE ${APP_LINK_OPTIONS})
