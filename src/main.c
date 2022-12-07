@@ -11,15 +11,18 @@
 #include "share/compat.h"
 #include "FLAC/metadata.h"
 #include "FLAC/stream_encoder.h"
+#include "FLAC/stream_decoder.h"
 
 #define READSIZE 1024
-#define IN_FILE	 "in.wav"
+#define IN_FILE	 "test_in.wav"
 #define OUT_FILE "out.flac"
 #define ENCODER_FILE ""
 
 static unsigned total_samples = 0; /* can use a 32-bit number due to WAVE size limitations */
 static FLAC__byte buffer[READSIZE/*samples*/ * 2/*bytes_per_sample*/ * 2/*channels*/]; /* we read the WAVE data into here */
 static FLAC__int32 pcm[READSIZE/*samples*/ * 2/*channels*/];
+
+static void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_written, FLAC__uint64 samples_written, unsigned frames_written, unsigned total_frames_estimate, void *client_data);
 
 int main(int argc, char *argv[])
 {
@@ -42,14 +45,14 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	printf("Checkpoint 1\n");
+	printf("Checkpoint %d\n",__LINE__);
 #if 1
 	/* read wav header and validate it */
 	if(
 		fread(buffer, 1, 44, fin) != 44 ||
-		memcmp(buffer, "RIFF", 4) ||
-		memcmp(buffer+8, "WAVEfmt \020\000\000\000\001\000\002\000", 16) ||
-		memcmp(buffer+32, "\004\000\020\000data", 8)
+		memcmp(buffer, "RIFF", 4) /* || */
+		// memcmp(buffer+8, "WAVEfmt \020\000\000\000\001\000\002\000", 16) ||
+		// memcmp(buffer+32, "\004\000\020\000data", 8)
 	) {
 		printf("ERROR: invalid/unsupported WAVE file, only 16bps stereo WAVE in canonical form allowed\n");
 		fclose(fin);
@@ -68,15 +71,18 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	printf("Checkpoint 2\n");
-#if 0
+	printf("Checkpoint %d\n",__LINE__);
+#if 1
 	ok &= FLAC__stream_encoder_set_verify(encoder, true);
 	ok &= FLAC__stream_encoder_set_compression_level(encoder, 5);
 	ok &= FLAC__stream_encoder_set_channels(encoder, channels);
 	ok &= FLAC__stream_encoder_set_bits_per_sample(encoder, bps);
 	ok &= FLAC__stream_encoder_set_sample_rate(encoder, sample_rate);
 	ok &= FLAC__stream_encoder_set_total_samples_estimate(encoder, total_samples);
+#endif
 
+	printf("Checkpoint %d\n",__LINE__);
+#if 0
 	/* now add some metadata; we'll add some tags and a padding block */
 	if(ok) {
 		if(
@@ -91,17 +97,14 @@ int main(int argc, char *argv[])
 			printf("ERROR: out of memory or tag error\n");
 			ok = false;
 		} else {
-
 			metadata[1]->length = 1234; /* set the padding length */
-
 			ok = FLAC__stream_encoder_set_metadata(encoder, metadata, 2);
-
-                }
+		}
 	}
 #endif
-	printf("Checkpoint 3\n");
 
-#if 0
+	printf("Checkpoint %d\n",__LINE__);
+#if 1
 	/* initialize encoder */
 	if(ok) {
 		init_status = FLAC__stream_encoder_init_file(encoder, OUT_FILE, progress_callback, /*client_data=*/NULL);
@@ -112,8 +115,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	printf("Checkpoint 4\n");
-#if 0
+	printf("Checkpoint %d\n",__LINE__);
+#if 1
 	/* read blocks of samples from WAVE file and feed to encoder */
 	if(ok) {
 		size_t left = (size_t)total_samples;
@@ -134,6 +137,7 @@ int main(int argc, char *argv[])
 				ok = FLAC__stream_encoder_process_interleaved(encoder, pcm, need);
 			}
 			left -= need;
+			printf("iter\n");
 		}
 	}
 
@@ -141,17 +145,32 @@ int main(int argc, char *argv[])
 
 	printf("encoding: %s\n", ok? "succeeded" : "FAILED");
 	printf("   state: %s\n", FLAC__StreamEncoderStateString[FLAC__stream_encoder_get_state(encoder)]);
-#endif
-	printf("Checkpoint 5\n");
+	
+	printf("   FLAC__stream_encoder_get_verify_decoder_state: %s\n", FLAC__StreamDecoderStateString[FLAC__stream_encoder_get_verify_decoder_state(encoder)]);
 
+
+#endif
+
+	printf("Checkpoint %d\n",__LINE__);
 #if 0
 	/* now that encoding is finished, the metadata can be freed */
 	FLAC__metadata_object_delete(metadata[0]);
 	FLAC__metadata_object_delete(metadata[1]);
+#endif
 
+	printf("Checkpoint %d\n",__LINE__);
+#if 1
 	FLAC__stream_encoder_delete(encoder);
 	fclose(fin);
 #endif
 
+	printf("Done\n");
     return 0;
+}
+
+void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_written, FLAC__uint64 samples_written, unsigned frames_written, unsigned total_frames_estimate, void *client_data)
+{
+	(void)encoder, (void)client_data;
+
+	printf("wrote %lu bytes, %lu /%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
 }

@@ -1,0 +1,6 @@
+[submodule "xmos_cmake_toolchain"]
+	path = xmos_cmake_toolchain
+	url = git@github.com:xmos/xmos_cmake_toolchain.git
+[submodule "flac-test-files"]
+	path = flac-test-files
+	url = git@github.com:ietf-wg-cellar/flac-test-files.git
