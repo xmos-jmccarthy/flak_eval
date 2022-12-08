@@ -231,7 +231,7 @@ static FLAC__bool bitreader_read_from_client_(FLAC__BitReader *br)
 FLAC__BitReader *FLAC__bitreader_new(void)
 {
   stack(__FUNCTION__, __FILE__, __LINE__);
-	FLAC__BitReader *br = bgetz(1, sizeof(FLAC__BitReader));
+	FLAC__BitReader *br = bgetz(1*sizeof(FLAC__BitReader));
 
 	/* calloc() implies:
 		memset(br, 0, sizeof(FLAC__BitReader));

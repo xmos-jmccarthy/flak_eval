@@ -143,7 +143,7 @@ FLAC__bool bitwriter_grow_(FLAC__BitWriter *bw, unsigned bits_to_add)
 
 FLAC__BitWriter *FLAC__bitwriter_new(void)
 {
-	FLAC__BitWriter *bw = bgetz(1, sizeof(FLAC__BitWriter));
+	FLAC__BitWriter *bw = bgetz(1*sizeof(FLAC__BitWriter));
 	/* note that calloc() sets all members to 0 for us */
 	return bw;
 }

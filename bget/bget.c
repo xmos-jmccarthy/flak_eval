@@ -404,20 +404,20 @@
 					 the test program should make. */
 #undef TestProg
 
-#define SizeQuant   4		      /* Buffer allocation size quantum:
+#define SizeQuant   8		      /* Buffer allocation size quantum:
 					 all buffers allocated are a
 					 multiple of this size.  This
 					 MUST be a power of two. */
 
-#define BufDump     1		      /* Define this symbol to enable the
+#define BufDump     0		      /* Define this symbol to enable the
 					 bpoold() function which dumps the
 					 buffers in a buffer pool. */
 
-#define BufValid    1		      /* Define this symbol to enable the
+#define BufValid    0		      /* Define this symbol to enable the
 					 bpoolv() function for validating
 					 a buffer pool. */ 
 
-#define DumpData    1		      /* Define this symbol to enable the
+#define DumpData    0		      /* Define this symbol to enable the
 					 bufdump() function which allows
 					 dumping the contents of an allocated
 					 or free buffer. */
@@ -429,7 +429,7 @@
 					 buffer, and the total space
 					 currently allocated. */
 
-#define FreeWipe    1		      /* Wipe free buffers to a guaranteed
+#define FreeWipe    0		      /* Wipe free buffers to a guaranteed
 					 pattern of garbage to trip up
 					 miscreants who attempt to use
 					 pointers into released buffers. */
@@ -440,7 +440,7 @@
 					 memory more efficiently, but
 					 allocation will be much slower. */
 
-#define BECtl	    1		      /* Define this symbol to enable the
+#define BECtl	    0		      /* Define this symbol to enable the
 					 bectl() function for automatic
 					 pool space control.  */
 
@@ -470,7 +470,7 @@ extern char *sprintf();               /* Sun includes don't define sprintf */
 
 #include "bget.h"
 
-#define MemSize     int 	      /* Type for size arguments to memxxx()
+#define MemSize     size_t 	      /* Type for size arguments to memxxx()
 					 functions such as memcmp(). */
 
 /* Queue links */

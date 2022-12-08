@@ -22,8 +22,7 @@
 #define OUT_FILE "out.flac"
 #define ENCODER_FILE ""
 
-#define CHAN_CNT 2
-#define HEAP_SIZE_KB 1024
+#define HEAP_SIZE_KB 1024*10
 
 static unsigned total_samples = 0; /* can use a 32-bit number due to WAVE size limitations */
 static FLAC__byte buffer[READSIZE/*samples*/ * 2/*bytes_per_sample*/ * CHAN_CNT/*channels*/]; /* we read the WAVE data into here */
@@ -211,4 +210,14 @@ void progress_callback(const FLAC__StreamEncoder *encoder, FLAC__uint64 bytes_wr
 	(void)encoder, (void)client_data;
 
 	printf("wrote %llu bytes, %llu /%u samples, %u/%u frames\n", bytes_written, samples_written, total_samples, frames_written, total_frames_estimate);
+
+#if USE_BGETS
+	bufsize curalloc;
+	bufsize totfree;
+	bufsize maxfree;
+	long nget;
+	long nrel;
+	bstats(&curalloc, &totfree, &maxfree, &nget, &nrel);
+	printf("curalloc:%li totfree:%li maxfree:%li nget:%li nrel:%li\n", curalloc, totfree, maxfree, nget, nrel);
+#endif
 }

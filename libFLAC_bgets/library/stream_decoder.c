@@ -248,18 +248,18 @@ FLAC_API FLAC__StreamDecoder *FLAC__stream_decoder_new(void)
 
 	FLAC__ASSERT(sizeof(int) >= 4); /* we want to die right away if this is not true */
 
-	decoder = bgetz(1, sizeof(FLAC__StreamDecoder));
+	decoder = bgetz(1*sizeof(FLAC__StreamDecoder));
 	if(decoder == 0) {
 		return 0;
 	}
 
-	decoder->protected_ = bgetz(1, sizeof(FLAC__StreamDecoderProtected));
+	decoder->protected_ = bgetz(1*sizeof(FLAC__StreamDecoderProtected));
 	if(decoder->protected_ == 0) {
 		brel(decoder);
 		return 0;
 	}
 
-	decoder->private_ = bgetz(1, sizeof(FLAC__StreamDecoderPrivate));
+	decoder->private_ = bgetz(1*sizeof(FLAC__StreamDecoderPrivate));
 	if(decoder->private_ == 0) {
 		brel(decoder->protected_);
 		brel(decoder);

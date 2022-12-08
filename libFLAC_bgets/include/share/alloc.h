@@ -79,7 +79,7 @@ static inline void *safe_calloc_(size_t nmemb, size_t size)
 {
 	if(!nmemb || !size)
 		return bget(1); /* malloc(0) is undefined; FLAC src convention is to always allocate */
-	return bgetz(nmemb, size);
+	return bgetz(nmemb*size);
 }
 
 /*@@@@ there's probably a better way to prevent overflows when allocating untrusted sums but this works for now */
